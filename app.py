@@ -135,7 +135,7 @@ def plot_price_series(prices, last_price, scenarios):
 
 def plot_distribution_fit(log_returns, alpha, beta, loc, scale):
     """Plot histogram with fitted distribution"""
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(8, 5))
     
     # Safety check
     if len(log_returns) == 0:
@@ -183,7 +183,7 @@ def plot_distribution_fit(log_returns, alpha, beta, loc, scale):
 
 def plot_cdf_analysis(log_returns, alpha, beta, loc, scale, last_price, scenarios, days_ahead):
     """Plot CDF with probability markers"""
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(8, 5))
     
     # Safety check
     if len(log_returns) == 0:
@@ -459,15 +459,30 @@ if analyze_button:
         fig_price = plot_price_series(prices, last_price, scenarios)
         st.pyplot(fig_price)
         
-        # Distribution fit (optional)
-        if show_distribution_fit:
+        # Distribution fit and CDF analysis side-by-side (if both enabled)
+        if show_distribution_fit and show_cdf_analysis:
+            st.markdown("---")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("📊 Distribution Fit")
+                fig_dist = plot_distribution_fit(log_returns, alpha, beta, loc, scale)
+                st.pyplot(fig_dist)
+            
+            with col2:
+                st.subheader("📉 Cumulative Probability")
+                fig_cdf = plot_cdf_analysis(log_returns, alpha, beta, loc, scale, 
+                                           last_price, scenarios, days_ahead)
+                st.pyplot(fig_cdf)
+        
+        # Show individually if only one is enabled
+        elif show_distribution_fit:
             st.markdown("---")
             st.subheader("📊 Distribution Fit Analysis")
             fig_dist = plot_distribution_fit(log_returns, alpha, beta, loc, scale)
             st.pyplot(fig_dist)
         
-        # CDF analysis (optional)
-        if show_cdf_analysis:
+        elif show_cdf_analysis:
             st.markdown("---")
             st.subheader("📉 Cumulative Probability Function")
             fig_cdf = plot_cdf_analysis(log_returns, alpha, beta, loc, scale, 
@@ -506,8 +521,8 @@ if analyze_button:
 
 else:
     # Initial state - show instructions
-    st.info("""
-    👈 **Get Started:**
+    st.markdown("""
+    ### 👈 Get Started:
     
     1. Enter a stock symbol in the sidebar
     2. Adjust the price target scenarios
