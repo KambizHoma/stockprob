@@ -87,12 +87,18 @@ def calculate_probability(alpha, beta, loc, scale, last_price, future_price, day
 
 def plot_price_series(prices, last_price, scenarios):
     """Plot price series with scenario markers"""
+    import matplotlib.dates as mdates
+    
     fig, ax = plt.subplots(figsize=(12, 5))
     
-    ax.plot(prices.index, prices.values, linewidth=2, color='#2E86AB', 
+    # Convert index to list for plotting
+    dates = prices.index.tolist()
+    values = prices.values
+    
+    ax.plot(dates, values, linewidth=2, color='#2E86AB', 
             label='Historical Prices', zorder=3)
     
-    ax.scatter([prices.index[-1]], [last_price], color='#1e3a8a', s=150, 
+    ax.scatter([dates[-1]], [last_price], color='#1e3a8a', s=150, 
                zorder=5, marker='o', label='Current Price', edgecolors='white', linewidths=2)
     
     colors = ['#10b981', '#f59e0b', '#ef4444']  # green, orange, red
@@ -106,6 +112,9 @@ def plot_price_series(prices, last_price, scenarios):
     ax.set_title("Price History with Target Scenarios", fontsize=14, fontweight='bold', color='#1e3a8a')
     ax.grid(True, alpha=0.3, linestyle='--')
     ax.legend(loc='best', fontsize=10, framealpha=0.95)
+    
+    # Format x-axis dates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=45)
     plt.tight_layout()
     
@@ -380,8 +389,12 @@ if analyze_button:
                 st.error(f"❌ Unable to find price data for '{symbol}'. Columns available: {list(data.columns)}")
                 st.stop()
             
+            # Ensure index is datetime and properly formatted
+            if not isinstance(prices.index, pd.DatetimeIndex):
+                prices.index = pd.to_datetime(prices.index)
+            
             historical_days = len(prices)
-            last_price = prices.iloc[-1]
+            last_price = float(prices.iloc[-1])
             
             # Fit distribution
             alpha, beta, loc, scale, log_returns = fit_stable_distribution(prices.values)
