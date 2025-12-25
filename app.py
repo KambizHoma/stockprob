@@ -15,22 +15,23 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Nippotica branding
+# Custom CSS for clean header
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+        background: white;
         padding: 20px;
         border-radius: 10px;
         margin-bottom: 20px;
+        border: 2px solid #e5e7eb;
     }
     .main-header h1 {
-        color: white;
+        color: #111827;
         margin: 0;
         font-size: 2em;
     }
     .main-header p {
-        color: #e0e7ff;
+        color: #4b5563;
         margin: 5px 0 0 0;
     }
     .stAlert {
@@ -44,7 +45,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🎯 Stock Price Hit Probability</h1>
-    <p><strong>Nippotica Corporation</strong> | Algotechniq Business Unit | Fat-Tailed Distribution Analysis</p>
+    <p><strong>Nippotica Corporation</strong> | Nippofin Business Unit | Fat-Tailed Distribution Analysis</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -232,62 +233,40 @@ def plot_cdf_analysis(log_returns, alpha, beta, loc, scale, last_price, scenario
 
 
 def create_summary_text(symbol, last_price, alpha, beta, loc, scale, scenarios, days_ahead, historical_days):
-    """Generate detailed analysis summary"""
+    """Generate concise analysis summary with tables"""
     summary = f"""📊 **Analysis Summary for {symbol}**
 
-**Current Price:** ${last_price:.2f}
-**Analysis Period:** {historical_days} days of historical data
+**Current Price:** ${last_price:.2f}  
+**Analysis Period:** {historical_days} days  
 **Time Horizon:** {days_ahead} days ahead
 
 ---
 
-**📈 Stable Distribution Parameters:**
+**📈 Stable Distribution Parameters**
 
-• **α (Alpha) = {alpha:.4f}**
-  - Tail heaviness indicator
-  - α = 2.0: Normal distribution (thin tails)
-  - α < 2.0: Fat tails (extreme events more likely)
-  - Lower α = heavier tails
-
-• **β (Beta) = {beta:.4f}**
-  - Skewness parameter
-  - β = 0: Symmetric
-  - β > 0: Right-skewed (upside bias)
-  - β < 0: Left-skewed (downside bias)
-
-• **μ (Location) = {loc:.6f}**
-  - Central tendency of daily log returns
-
-• **σ (Scale) = {scale:.6f}**
-  - Volatility/dispersion measure
+α (Alpha) = {alpha:.4f}  
+β (Beta) = {beta:.4f}  
+μ (Location) = {loc:.6f}  
+σ (Scale) = {scale:.6f}
 
 ---
 
-**🎯 Target Scenario Probabilities:**
-
+**🎯 Target Scenario Probabilities**
 """
     
+    # Create DataFrame for scenarios table
+    table_data = []
     for pct, price, prob_lower, prob_higher in scenarios:
-        direction = "📈" if pct > 0 else "📉"
-        summary += f"""{direction} **{pct:+.1f}% Change → ${price:.2f}**
-   • Probability price will be BELOW this target: {prob_lower*100:.2f}%
-   • Probability price will be ABOVE this target: {prob_higher*100:.2f}%
-
-"""
+        table_data.append({
+            'Scenario': f'{pct:+.1f}%',
+            'Target Price': f'${price:.2f}',
+            'Prob. Below': f'{prob_lower*100:.2f}%',
+            'Prob. Above': f'{prob_higher*100:.2f}%'
+        })
     
-    summary += f"""---
-
-**⚠️ Important Notes:**
-
-• This analysis uses stable distributions to capture fat tails and extreme events
-• Past performance does not guarantee future results
-• Market conditions can change rapidly
-• Use this as one input among many for decision-making
-
-**📚 For Educational Purposes Only**
-"""
+    scenarios_df = pd.DataFrame(table_data)
     
-    return summary
+    return summary, scenarios_df
 
 
 #############################################
@@ -397,7 +376,7 @@ Traditional models assume normal distributions, but real markets have:
 ---
 
 **Created for Nippotica Corporation**
-Algotechniq Business Unit
+Nippofin Business Unit
 
 Inspired by Mandelbrot, Fama, and Nolan's work on heavy-tailed distributions.
 """)
@@ -495,12 +474,13 @@ if analyze_button:
                                        last_price, scenarios, days_ahead)
             st.pyplot(fig_cdf)
         
-        # Summary text
+        # Summary text and table
         st.markdown("---")
-        st.subheader("📊 Detailed Analysis")
-        summary = create_summary_text(symbol, last_price, alpha, beta, loc, scale, 
+        st.subheader("📊 Analysis Summary")
+        summary, scenarios_df = create_summary_text(symbol, last_price, alpha, beta, loc, scale, 
                                      scenarios, days_ahead, historical_days)
         st.markdown(summary)
+        st.table(scenarios_df)
         
         # Optional statistics table
         if show_statistics:
@@ -570,7 +550,7 @@ else:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #6b7280; padding: 20px;'>
-    <p><strong>Nippotica Corporation</strong> | Algotechniq Business Unit</p>
+    <p><strong>Nippotica Corporation</strong> | Nippofin Business Unit</p>
     <p>Stock Price Hit Probability Tool | Stable Distribution Analysis</p>
     <p style='font-size: 0.9em;'>For educational and research purposes only. Not investment advice.</p>
 </div>
