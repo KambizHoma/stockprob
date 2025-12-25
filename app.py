@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 # Page configuration
 st.set_page_config(
     page_title="Stock Hit Probability | Nippotica",
-    page_icon="🎯",
+    page_icon="nippotica_icon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -44,7 +44,7 @@ st.markdown("""
 # Header with Nippotica branding
 st.markdown("""
 <div class="main-header">
-    <h1>🎯 Stock Price Hit Probability</h1>
+    <h1>Stock Price Hit Probability</h1>
     <p><strong>Nippotica Corporation</strong> | Nippofin Business Unit | Fat-Tailed Distribution Analysis</p>
 </div>
 """, unsafe_allow_html=True)
@@ -251,7 +251,7 @@ def create_summary_text(symbol, last_price, alpha, beta, loc, scale, scenarios, 
 
 ---
 
-**🎯 Target Scenario Probabilities**
+**Target Scenario Probabilities**
 """
     
     # Create DataFrame for scenarios table
@@ -273,10 +273,10 @@ def create_summary_text(symbol, last_price, alpha, beta, loc, scale, scenarios, 
 # SIDEBAR CONTROLS
 #############################################
 
-st.sidebar.header("🎯 Stock Analysis Controls")
+st.sidebar.header("Stock Analysis Controls")
 
 # Analyze button at the top
-analyze_button = st.sidebar.button("🎯 Calculate Probabilities", type="primary", use_container_width=True)
+analyze_button = st.sidebar.button("Calculate Probabilities", type="primary", use_container_width=True)
 
 st.sidebar.markdown("---")
 
@@ -295,7 +295,7 @@ end_date = st.sidebar.date_input(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("🎯 Price Target Scenarios")
+st.sidebar.subheader("Price Target Scenarios")
 
 # Three scenario sliders
 scenario_1 = st.sidebar.slider(
@@ -341,7 +341,7 @@ with st.sidebar.expander("⚙️ Advanced Options"):
 st.sidebar.markdown("---")
 
 # View options
-st.sidebar.subheader("📊 Display Options")
+st.sidebar.subheader("Display Options")
 show_distribution_fit = st.sidebar.checkbox("Show Distribution Fit", value=True)
 show_cdf_analysis = st.sidebar.checkbox("Show CDF Analysis", value=True)
 show_statistics = st.sidebar.checkbox("Show Detailed Statistics", value=False)
@@ -358,9 +358,9 @@ This tool calculates the odds that a stock will reach your target price using **
 **Why Stable Distributions?**
 
 Traditional models assume normal distributions, but real markets have:
-- 📉 Fat tails (extreme events happen more often)
-- 📊 Skewness (asymmetric returns)
-- ⚡ Higher volatility than bell curves predict
+- Fat tails (extreme events happen more often)
+- Skewness (asymmetric returns)
+- Higher volatility than bell curves predict
 
 **How It Works:**
 1. Downloads historical price data
@@ -455,7 +455,7 @@ if analyze_button:
         st.markdown("---")
         
         # Price chart
-        st.subheader("📈 Price History with Target Scenarios")
+        st.subheader("Price History with Target Scenarios")
         fig_price = plot_price_series(prices, last_price, scenarios)
         st.pyplot(fig_price)
         
@@ -465,12 +465,12 @@ if analyze_button:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("📊 Distribution Fit")
+                st.subheader("Distribution Fit")
                 fig_dist = plot_distribution_fit(log_returns, alpha, beta, loc, scale)
                 st.pyplot(fig_dist)
             
             with col2:
-                st.subheader("📉 Cumulative Probability")
+                st.subheader("Cumulative Probability")
                 fig_cdf = plot_cdf_analysis(log_returns, alpha, beta, loc, scale, 
                                            last_price, scenarios, days_ahead)
                 st.pyplot(fig_cdf)
@@ -478,20 +478,20 @@ if analyze_button:
         # Show individually if only one is enabled
         elif show_distribution_fit:
             st.markdown("---")
-            st.subheader("📊 Distribution Fit Analysis")
+            st.subheader("Distribution Fit Analysis")
             fig_dist = plot_distribution_fit(log_returns, alpha, beta, loc, scale)
             st.pyplot(fig_dist)
         
         elif show_cdf_analysis:
             st.markdown("---")
-            st.subheader("📉 Cumulative Probability Function")
+            st.subheader("Cumulative Probability Function")
             fig_cdf = plot_cdf_analysis(log_returns, alpha, beta, loc, scale, 
                                        last_price, scenarios, days_ahead)
             st.pyplot(fig_cdf)
         
         # Summary text and table
         st.markdown("---")
-        st.subheader("📊 Analysis Summary")
+        st.subheader("Analysis Summary")
         summary, scenarios_df = create_summary_text(symbol, last_price, alpha, beta, loc, scale, 
                                      scenarios, days_ahead, historical_days)
         st.markdown(summary)
@@ -500,7 +500,7 @@ if analyze_button:
         # Optional statistics table
         if show_statistics:
             st.markdown("---")
-            st.subheader("📈 Historical Statistics")
+            st.subheader("Historical Statistics")
             stats_df = pd.DataFrame({
                 'Metric': ['Mean Log Return', 'Std Dev Log Return', 'Min Log Return', 
                           'Max Log Return', 'Skewness (β)', 'Tail Index (α)'],
@@ -517,12 +517,12 @@ if analyze_button:
         
     except Exception as e:
         st.error(f"❌ Error during analysis: {str(e)}")
-        st.info("💡 Please check your inputs and try again.")
+        st.info("Please check your inputs and try again.")
 
 else:
     # Initial state - show instructions
     st.markdown("""
-    ### 👈 Get Started:
+    ### Get Started:
     
     1. Enter a stock symbol in the sidebar
     2. Adjust the price target scenarios
@@ -533,7 +533,7 @@ else:
     
     # Example scenarios
     st.markdown("---")
-    st.subheader("💡 Quick Examples")
+    st.subheader("Quick Examples")
     
     col1, col2, col3 = st.columns(3)
     
