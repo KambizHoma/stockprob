@@ -125,10 +125,19 @@ def plot_distribution_fit(log_returns, alpha, beta, loc, scale):
     """Plot histogram with fitted distribution"""
     fig, ax = plt.subplots(figsize=(12, 5))
     
+    # Safety check
+    if len(log_returns) == 0:
+        ax.text(0.5, 0.5, 'No log returns data available', 
+                ha='center', va='center', transform=ax.transAxes)
+        return fig
+    
     ax.hist(log_returns, bins=50, density=True, alpha=0.6, 
             color='#3b82f6', edgecolor='#1e3a8a', label='Historical Log Returns')
     
-    x = np.linspace(log_returns.min(), log_returns.max(), 1000)
+    # Use percentiles for more robust range
+    x_min = np.percentile(log_returns, 1)
+    x_max = np.percentile(log_returns, 99)
+    x = np.linspace(x_min, x_max, 1000)
     pdf = levy_stable.pdf(x, alpha, beta, loc=loc, scale=scale)
     ax.plot(x, pdf, color='#ef4444', linewidth=3, label='Fitted Stable Distribution')
     
@@ -146,6 +155,12 @@ def plot_cdf_analysis(log_returns, alpha, beta, loc, scale, last_price, scenario
     """Plot CDF with probability markers"""
     fig, ax = plt.subplots(figsize=(12, 5))
     
+    # Safety check
+    if len(log_returns) == 0:
+        ax.text(0.5, 0.5, 'No log returns data available', 
+                ha='center', va='center', transform=ax.transAxes)
+        return fig
+    
     time_scale_factor = np.sqrt(days_ahead)
     scaled_scale = scale * time_scale_factor
     scaled_loc = loc * days_ahead
@@ -153,8 +168,12 @@ def plot_cdf_analysis(log_returns, alpha, beta, loc, scale, last_price, scenario
     scenario_prices = [price for _, price, _, _ in scenarios]
     scenario_log_returns = [np.log(price/last_price) for price in scenario_prices]
     
-    min_log_return = min(max(-0.4, log_returns.min()), min(scenario_log_returns) - 0.05)
-    max_log_return = max(min(0.4, log_returns.max()), max(scenario_log_returns) + 0.05)
+    # Use percentiles for more robust range
+    lr_min = np.percentile(log_returns, 1)
+    lr_max = np.percentile(log_returns, 99)
+    
+    min_log_return = min(max(-0.4, lr_min), min(scenario_log_returns) - 0.05)
+    max_log_return = max(min(0.4, lr_max), max(scenario_log_returns) + 0.05)
     
     min_price = last_price * np.exp(min_log_return)
     max_price = last_price * np.exp(max_log_return)
@@ -373,12 +392,20 @@ if analyze_button:
             start_dt = end_dt - pd.DateOffset(years=1)
             start_date = start_dt.strftime('%Y-%m-%d')
             
-            # Download data
-            data = yf.download(symbol, start=start_date, end=end_date_str, progress=False)
+            # Download data with error handling
+            try:
+                data = yf.download(symbol, start=start_date, end=end_date_str, progress=False)
+            except Exception as e:
+                st.error(f"❌ Error downloading data: {str(e)}")
+                st.stop()
             
-            if data.empty:
+            if data is None or data.empty:
                 st.error(f"❌ No data found for symbol '{symbol}'. Please check the symbol and try again.")
                 st.stop()
+            
+            # Handle multi-index columns (new yfinance format)
+            if isinstance(data.columns, pd.MultiIndex):
+                data.columns = data.columns.droplevel(1)
             
             # Handle both old and new Yahoo Finance column formats
             if 'Adj Close' in data.columns:
@@ -387,6 +414,11 @@ if analyze_button:
                 prices = data['Close'].dropna()
             else:
                 st.error(f"❌ Unable to find price data for '{symbol}'. Columns available: {list(data.columns)}")
+                st.stop()
+            
+            # Check if we have enough data
+            if len(prices) < 30:
+                st.error(f"❌ Not enough data for '{symbol}'. Only {len(prices)} days found. Need at least 30 days.")
                 st.stop()
             
             # Ensure index is datetime and properly formatted
