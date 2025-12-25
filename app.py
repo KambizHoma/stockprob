@@ -239,6 +239,11 @@ def create_summary_text(symbol, last_price, alpha, beta, loc, scale, scenarios, 
 
 st.sidebar.header("🎯 Stock Analysis Controls")
 
+# Analyze button at the top
+analyze_button = st.sidebar.button("🎯 Calculate Probabilities", type="primary", use_container_width=True)
+
+st.sidebar.markdown("---")
+
 # Stock symbol input
 symbol = st.sidebar.text_input(
     "Stock Symbol",
@@ -344,9 +349,6 @@ Inspired by Mandelbrot, Fama, and Nolan's work on heavy-tailed distributions.
 # MAIN ANALYSIS
 #############################################
 
-# Analyze button
-analyze_button = st.sidebar.button("🎯 Calculate Probabilities", type="primary", use_container_width=True)
-
 if analyze_button:
     try:
         with st.spinner(f'Downloading data for {symbol}...'):
@@ -361,7 +363,15 @@ if analyze_button:
                 st.error(f"❌ No data found for symbol '{symbol}'. Please check the symbol and try again.")
                 st.stop()
             
-            prices = data['Adj Close'].dropna()
+            # Handle both old and new Yahoo Finance column formats
+            if 'Adj Close' in data.columns:
+                prices = data['Adj Close'].dropna()
+            elif 'Close' in data.columns:
+                prices = data['Close'].dropna()
+            else:
+                st.error(f"❌ Unable to find price data for '{symbol}'. Columns available: {list(data.columns)}")
+                st.stop()
+            
             historical_days = len(prices)
             last_price = prices.iloc[-1]
             
