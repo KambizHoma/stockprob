@@ -353,8 +353,16 @@ if analyze_button:
     try:
         with st.spinner(f'Downloading data for {symbol}...'):
             # Calculate date range
-            end_date_str = end_date.strftime('%Y-%m-%d')
-            start_date = (pd.to_datetime(end_date) - pd.DateOffset(years=1)).strftime('%Y-%m-%d')
+            # Convert date object to string safely
+            if hasattr(end_date, 'strftime'):
+                end_date_str = end_date.strftime('%Y-%m-%d')
+            else:
+                end_date_str = str(end_date)
+            
+            # Calculate start date (1 year before)
+            end_dt = pd.to_datetime(end_date_str)
+            start_dt = end_dt - pd.DateOffset(years=1)
+            start_date = start_dt.strftime('%Y-%m-%d')
             
             # Download data
             data = yf.download(symbol, start=start_date, end=end_date_str, progress=False)
