@@ -54,19 +54,30 @@ st.markdown("""
 
 def fit_stable_distribution(prices):
     """Calculate log returns and fit stable distribution using fast quantile method"""
+    # Calculate log returns
     log_returns = np.diff(np.log(prices))
     
+    # Safety check
+    if len(log_returns) == 0:
+        raise ValueError("Not enough price data to calculate log returns")
+    
+    # Try McCulloch's fast method first
     try:
         from scipy.stats._levy_stable import _fitstart
         alpha, beta, loc, scale = _fitstart(log_returns)
     except (ImportError, AttributeError):
+        # Fallback to MLE with limited iterations
         try:
             alpha, beta, loc, scale = levy_stable.fit(log_returns, method='MLE', optimizer={'maxiter': 20})
-        except:
-            alpha = 1.8
-            beta = 0.0
-            loc = np.median(log_returns)
-            scale = np.std(log_returns) * 0.5
+        except Exception:
+            # Ultimate fallback: use rough estimates
+            if len(log_returns) > 0:
+                alpha = 1.8
+                beta = 0.0
+                loc = np.median(log_returns) if len(log_returns) > 0 else 0.0
+                scale = np.std(log_returns) * 0.5 if len(log_returns) > 0 else 0.01
+            else:
+                raise ValueError("Unable to fit distribution: insufficient data")
     
     return alpha, beta, loc, scale, log_returns
 
@@ -128,18 +139,36 @@ def plot_distribution_fit(log_returns, alpha, beta, loc, scale):
     # Safety check
     if len(log_returns) == 0:
         ax.text(0.5, 0.5, 'No log returns data available', 
-                ha='center', va='center', transform=ax.transAxes)
+                ha='center', va='center', transform=ax.transAxes, fontsize=14)
         return fig
     
-    ax.hist(log_returns, bins=50, density=True, alpha=0.6, 
+    # Plot histogram with robust bins
+    n_bins = min(50, max(10, len(log_returns) // 10))
+    ax.hist(log_returns, bins=n_bins, density=True, alpha=0.6, 
             color='#3b82f6', edgecolor='#1e3a8a', label='Historical Log Returns')
     
-    # Use percentiles for more robust range
-    x_min = np.percentile(log_returns, 1)
-    x_max = np.percentile(log_returns, 99)
-    x = np.linspace(x_min, x_max, 1000)
-    pdf = levy_stable.pdf(x, alpha, beta, loc=loc, scale=scale)
-    ax.plot(x, pdf, color='#ef4444', linewidth=3, label='Fitted Stable Distribution')
+    # Create x range for PDF plot using robust statistics
+    try:
+        x_min = float(np.percentile(log_returns, 1))
+        x_max = float(np.percentile(log_returns, 99))
+        
+        # Ensure we have a valid range
+        if x_min >= x_max:
+            x_min = float(np.min(log_returns))
+            x_max = float(np.max(log_returns))
+        
+        # Add some padding
+        x_range = x_max - x_min
+        x_min -= x_range * 0.1
+        x_max += x_range * 0.1
+        
+        x = np.linspace(x_min, x_max, 1000)
+        pdf = levy_stable.pdf(x, alpha, beta, loc=loc, scale=scale)
+        ax.plot(x, pdf, color='#ef4444', linewidth=3, label='Fitted Stable Distribution')
+    except Exception as e:
+        # If PDF plotting fails, just show the histogram
+        ax.text(0.5, 0.95, f'Note: Could not plot fitted distribution', 
+                ha='center', va='top', transform=ax.transAxes, fontsize=10, color='red')
     
     ax.set_xlabel('Log Returns', fontsize=12, fontweight='bold')
     ax.set_ylabel('Density', fontsize=12, fontweight='bold')
