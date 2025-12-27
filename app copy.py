@@ -234,7 +234,7 @@ def plot_cdf_analysis(log_returns, alpha, beta, loc, scale, last_price, scenario
 
 def create_summary_text(symbol, last_price, alpha, beta, loc, scale, scenarios, days_ahead, historical_days):
     """Generate concise analysis summary with tables"""
-    summary = f"""**Analysis Summary for {symbol}**
+    summary = f"""📊 **Analysis Summary for {symbol}**
 
 **Current Price:** ${last_price:.2f}  
 **Analysis Period:** {historical_days} days  
@@ -289,21 +289,10 @@ symbol = st.sidebar.text_input(
 
 # End date
 end_date = st.sidebar.date_input(
-    "Date",
+    "Analysis End Date",
     value=pd.to_datetime("2024-12-31"),
     help="The analysis will use 1 year of data up to this date"
 )
-
-# Advanced options (collapsed by default)
-    days_ahead = st.slider(
-        "Time Horizon (Days)",
-        min_value=1,
-        max_value=30,
-        value=15,
-        step=1,
-        help="How many days in the future?"
-    )
-
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Price Target Scenarios")
@@ -336,6 +325,18 @@ scenario_3 = st.sidebar.slider(
     help="Negative % change scenario"
 )
 
+st.sidebar.markdown("---")
+
+# Advanced options (collapsed by default)
+with st.sidebar.expander("⚙️ Advanced Options"):
+    days_ahead = st.slider(
+        "Time Horizon (Days)",
+        min_value=1,
+        max_value=30,
+        value=15,
+        step=1,
+        help="How many days in the future?"
+    )
 
 st.sidebar.markdown("---")
 
