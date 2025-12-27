@@ -295,7 +295,7 @@ end_date = st.sidebar.date_input(
 )
 
 # Advanced options (collapsed by default)
-days_ahead = st.slider(
+days_ahead = st.sidebar.slider(
     "Time Horizon (Days)",
     min_value=1,
     max_value=30,
