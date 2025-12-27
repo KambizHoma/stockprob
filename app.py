@@ -295,14 +295,14 @@ end_date = st.sidebar.date_input(
 )
 
 # Advanced options (collapsed by default)
-    days_ahead = st.slider(
-        "Time Horizon (Days)",
-        min_value=1,
-        max_value=30,
-        value=15,
-        step=1,
-        help="How many days in the future?"
-    )
+days_ahead = st.slider(
+    "Time Horizon (Days)",
+    min_value=1,
+    max_value=30,
+    value=15,
+    step=1,
+    help="How many days in the future?"
+)
 
 
 st.sidebar.markdown("---")
